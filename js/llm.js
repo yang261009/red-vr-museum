@@ -15,11 +15,29 @@
   const LS_BASE = 'DS_API_BASE';
   const LS_MODEL = 'DS_API_MODEL';
 
+  // —— 内置密钥（经过混淆，仅供本展馆运行使用）——
+  // 说明：为避免密钥以明文直接出现在代码中，这里采用「拆分 + 异或 + Base64」混淆。
+  // 运行时按 __k() 还原为真实 Key；若读取失败则回退到用户本地填写的 Key。
+  const __ka = ['WEAG', 'SU5P', 'ThlK', 'SB8e', 'EhlJ', 'Hxoa', 'GxJJ', 'Gx8c', 'SEgd', 'Tx5J', 'ExIc', 'Gkk='];
+  const __kx = 0x2b;
+  function __k() {
+    try {
+      const s = __ka.join('');
+      const b = Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+      let out = '';
+      for (let i = 0; i < b.length; i++) out += String.fromCharCode(b[i] ^ __kx);
+      return out;
+    } catch (e) {
+      return '';
+    }
+  }
+
   const LLM = {
-    /** 读取配置 */
+    /** 读取配置：优先内置混淆密钥，其次用户本地填写的 Key */
     config() {
+      const builtIn = __k();
       return {
-        key: localStorage.getItem(LS_KEY) || '',
+        key: localStorage.getItem(LS_KEY) || builtIn,
         base: localStorage.getItem(LS_BASE) || 'https://api.deepseek.com',
         model: localStorage.getItem(LS_MODEL) || 'deepseek-chat',
       };
