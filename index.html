@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>行走的思政课：基于 VR 虚拟展馆的红色文化沉浸式教学实践</title>
+<link rel="stylesheet" href="css/style.css?v=20261022z14" />
+</head>
+<body>
+<div id="stage"></div>
+
+<!-- ============ UI 层 ============ -->
+<div class="ui-layer">
+
+  <!-- 顶部导航 -->
+  <header id="topbar">
+    <div class="brand">
+      <div class="brand-mark">VR</div>
+      <div class="brand-txt">
+        <strong>行走的思政课</strong>
+        <span>基于 VR 虚拟展馆的红色文化沉浸式教学实践</span>
+      </div>
+    </div>
+    <nav id="navList"></nav>
+    <div class="tools">
+      <button class="tool" id="btnTour" title="按动线自动参观">▶ 自动导览</button>
+      <button class="tool" id="btnShare" title="复制当前展厅的直达链接">🔗 分享</button>
+      <button class="tool" id="btnMusic" title="背景纯音乐开关">🎵 音乐</button>
+      <button class="tool" id="btnVR" title="切换 Cardboard 双屏模式">VR 双屏</button>
+      <button class="tool" id="btnHelp">操作说明</button>
+    </div>
+  </header>
+
+  <!-- 当前位置提示 -->
+  <div id="where"><span class="dot"></span><span id="whereTxt">序厅</span></div>
+
+  <!-- 小地图 -->
+  <div id="minimapBox">
+    <canvas id="minimap" width="220" height="164"></canvas>
+    <div class="mm-label">展厅平面导览</div>
+  </div>
+
+  <!-- 字幕 / 讲解控制 -->
+  <div id="captionBar" class="hidden">
+    <div class="cap-inner">
+      <span class="cap-tag" id="capTag">讲解员</span>
+      <span class="cap-text" id="capText"></span>
+    </div>
+    <div class="cap-ctrl">
+      <button id="capPause">暂停</button>
+      <button id="capStop">停止</button>
+    </div>
+  </div>
+
+  <!-- 智能导览助手 -->
+  <div id="assistant">
+    <div class="as-head" id="asHead">
+      <span class="as-avatar">AI</span>
+      <div>
+        <strong>智能导览助手</strong>
+        <em id="asState">已接入 DeepSeek · 大模型模式</em>
+      </div>
+      <span class="as-toggle" id="asToggle">—</span>
+    </div>
+    <div class="as-body" id="asBody">
+      <div class="as-log" id="asLog"></div>
+      <div class="as-quick" id="asQuick"></div>
+      <div class="as-input">
+        <input id="asInput" type="text" placeholder="问我：井冈山精神是什么？或说“带我去延安”" />
+        <button id="asSend">发送</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 移动端摇杆 -->
+  <div id="joy" class="hidden">
+    <div class="joy-base"><div class="joy-knob" id="joyKnob"></div></div>
+  </div>
+
+  <!-- 底部提示 -->
+  <div id="hint">W A S D 移动 · 按住鼠标左键拖动转视角 · 点击展板查看内容</div>
+</div>
+
+<!-- ============ 详情面板 ============ -->
+<div id="detail" class="hidden">
+  <div class="dt-mask" data-close></div>
+  <div class="dt-panel">
+    <button class="dt-close" data-close>×</button>
+    <div class="dt-head">
+      <div class="dt-order" id="dtOrder">01</div>
+      <div>
+        <h2 id="dtTitle"></h2>
+        <p id="dtSub"></p>
+      </div>
+      <button class="dt-narrate" id="dtNarrate">🔊 讲解员</button>
+    </div>
+    <div class="dt-tabs" id="dtTabs">
+      <button data-tab="read" class="on">展板全文</button>
+      <button data-tab="video">影像资料</button>
+      <button data-tab="ask">思考讨论</button>
+      <button data-tab="src">史料出处</button>
+    </div>
+    <div class="dt-body">
+      <div class="dt-pane on" id="paneRead"></div>
+      <div class="dt-pane" id="paneVideo">
+        <div class="video-wrap">
+          <video id="dtVideo" controls loop playsinline preload="metadata"></video>
+          <div id="dtIframe" class="video-embed hidden"></div>
+          <div id="videoFallback" class="video-fallback hidden">
+            <div class="vf-title">此处播放你的视频素材</div>
+            <div class="vf-sub">把 mp4 放入项目 videos/ 目录即可自动播放；也可粘贴在线视频地址</div>
+            <div class="vf-input">
+              <input id="videoUrl" type="text" placeholder="粘贴视频直链（.mp4）或网页视频链接" />
+              <button id="videoLoad">载入</button>
+            </div>
+          </div>
+        </div>
+        <div class="vf-films" id="filmLinks"></div>
+            </div>
+      <div class="dt-pane" id="paneAsk"></div>
+      <div class="dt-pane" id="paneSrc"></div>
+    </div>
+    <div class="dt-foot">
+      <button id="dtPrev">← 上一站</button>
+      <button id="dtGo" class="primary">走近这个展区</button>
+      <button id="dtNext">下一站 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 启动页 ============ -->
+<div id="splash">
+  <div class="sp-inner">
+    <div class="sp-badge">AI 赋能思政课程 · 教学案例</div>
+    <h1>行走的思政课</h1>
+    <h2>红色地标 VR 虚拟展馆</h2>
+    <button id="btnAbout" class="sp-about-btn">展馆说明</button>
+    <button id="btnStart" disabled>展馆构建中…</button>
+    <div class="sp-note">建议在电脑 Chrome / Edge 或手机浏览器中打开，横屏体验更佳</div>
+  </div>
+</div>
+
+<!-- ============ 展馆说明 ============ -->
+<div id="about" class="hidden">
+  <div class="hp-panel ab-panel">
+    <button class="hp-close" id="abClose">×</button>
+    <h3>展馆说明</h3>
+    <p class="ab-desc">
+      以井冈山、延安、西柏坡、红旗渠、新时代脱贫攻坚五处红色地标为线索，
+      按历史时间顺序构建可漫游的三维展馆。参观者可自由行走、点击展项、收听讲解、
+      与智能导览助手对话，并把链接直接分享给同伴在手机或电脑上打开。
+    </p>
+    <div class="ab-sec">
+      <h4>参观动线</h4>
+      <div class="ab-route" id="abRoute"></div>
+    </div>
+    <div class="ab-sec">
+      <h4>每个展区包含</h4>
+      <ul class="ab-list">
+        <li><b>展板全文</b>史实讲解与过渡解说</li>
+        <li><b>影像资料</b>本地视频或在线视频链接</li>
+        <li><b>思考讨论</b>讨论题与答题要点</li>
+        <li><b>史料出处</b>便于逐条核验出处</li>
+      </ul>
+    </div>
+    </div>
+</div>
+
+<!-- ============ 操作说明 ============ -->
+<div id="help" class="hidden">
+  <div class="hp-panel">
+    <button class="hp-close" data-closehelp>×</button>
+    <h3>操作说明</h3>
+    <div class="hp-grid">
+      <div>
+        <h4>电脑端</h4>
+        <ul>
+          <li><b>W A S D</b> 或方向键：前后左右移动</li>
+          <li><b>按住鼠标左键拖动</b>：转动视角</li>
+          <li><b>Shift</b>：加速行走</li>
+          <li><b>点击展板 / 屏幕</b>：打开详细内容</li>
+          <li><b>点击地面编号圆标</b>：直接传送到该展区</li>
+        </ul>
+      </div>
+      <div>
+        <h4>手机端</h4>
+        <ul>
+          <li><b>左下角摇杆</b>：控制移动</li>
+          <li><b>屏幕右侧滑动</b>：转动视角</li>
+          <li><b>轻点展板</b>：打开详细内容</li>
+          <li><b>顶部导航</b>：一键到达任意展厅</li>
+        </ul>
+      </div>
+    </div>
+    <div class="hp-tip">
+      展陈内容与参观动线请见 <button class="hp-link" data-openabout>展馆说明</button>。
+
+</div>
+
+<script>
+  // 错误收集：记录真实报错（脚本/行号/堆栈），写入 window.__errs
+  window.__errs = [];
+  window.addEventListener('error', function (e) {
+    var info = {
+      message: e.message || e.type,
+      src: (e.filename || '').split('/').pop(),
+      line: e.lineno,
+      col: e.colno,
+      stack: e.error && e.error.stack ? e.error.stack.split('\n').slice(0, 4).join(' | ') : ''
+    };
+    window.__errs.push(info);
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    window.__errs.push({ message: 'rejection: ' + (e.reason && e.reason.message ? e.reason.message : e.reason), stack: e.reason && e.reason.stack ? e.reason.stack.split('\n').slice(0,4).join(' | ') : '' });
+  });
+</script>
+<script src="vendor/three.min.js"></script>
+<script src="js/data.js?v=20261022z9"></script>
+<script src="js/video-source.js?v=20261019c"></script>
+<script src="js/textures.js?v=20261022z13"></script>
+<script src="assets/photos/manifest.js?v=20261022z6"></script>
+<script>
+  // 以本地文件方式（双击 index.html）打开时，浏览器把每个本地文件当作"唯一源"，
+  // 图片画进 canvas 后上传 WebGL 会被安全策略拒绝，墙面照片会全部空白。
+  // 这里加载同源 data-URL 素材包绕开该限制；由 tools/scan_photos.py 生成。
+  if (location.protocol === 'file:') {
+    document.write('<script src="assets/photos/embed.js"><\/script>');
+  }
+</script>
+<script src="js/museum.js?v=20261022z8"></script>
+<script src="js/controls.js?v=20261019e"></script>
+<script src="js/llm.js?v=20261022b"></script>
+<script src="js/ai.js?v=20261022d"></script>
+<script src="js/app.js?v=20261022z9"></script>
+</body>
+</html>
