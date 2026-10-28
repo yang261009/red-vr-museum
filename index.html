@@ -2,12 +2,12 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 <title>行走的思政课：基于 VR 虚拟展馆的红色文化沉浸式教学实践</title>
-<link rel="stylesheet" href="css/style.css?v=20261022z14" />
+<link rel="stylesheet" href="css/style.css?v=20261028b" />
 </head>
 <body>
 <div id="stage"></div>
@@ -78,6 +78,13 @@
   <!-- 移动端摇杆 -->
   <div id="joy" class="hidden">
     <div class="joy-base"><div class="joy-knob" id="joyKnob"></div></div>
+  </div>
+
+  <!-- 横屏提示遮罩 -->
+  <div id="rotateTip" class="hidden">
+    <div class="rt-phone"></div>
+    <p>请将手机横屏以获得最佳体验</p>
+    <em>左半屏摇杆移动 · 右半屏滑动视野</em>
   </div>
 
   <!-- 底部提示 -->
@@ -217,11 +224,11 @@
     window.__errs.push({ message: 'rejection: ' + (e.reason && e.reason.message ? e.reason.message : e.reason), stack: e.reason && e.reason.stack ? e.reason.stack.split('\n').slice(0,4).join(' | ') : '' });
   });
 </script>
-<script src="vendor/three.min.js"></script>
-<script src="js/data.js?v=20261022z9"></script>
-<script src="js/video-source.js?v=20261019c"></script>
-<script src="js/textures.js?v=20261022z13"></script>
-<script src="assets/photos/manifest.js?v=20261022z6"></script>
+<script src="vendor/three.min.js" defer></script>
+<script src="js/data.js?v=20261022z9" defer></script>
+<script src="js/video-source.js?v=20261019c" defer></script>
+<script src="js/textures.js?v=20261022z13" defer></script>
+<script src="assets/photos/manifest.js?v=20261022z6" defer></script>
 <script>
   // 以本地文件方式（双击 index.html）打开时，浏览器把每个本地文件当作"唯一源"，
   // 图片画进 canvas 后上传 WebGL 会被安全策略拒绝，墙面照片会全部空白。
@@ -230,10 +237,10 @@
     document.write('<script src="assets/photos/embed.js"><\/script>');
   }
 </script>
-<script src="js/museum.js?v=20261022z8"></script>
-<script src="js/controls.js?v=20261019e"></script>
-<script src="js/llm.js?v=20261028a"></script>
-<script src="js/ai.js?v=20261022d"></script>
-<script src="js/app.js?v=20261022z9"></script>
+<script src="js/museum.js?v=20261022z8" defer></script>
+<script src="js/controls.js?v=20261019e" defer></script>
+<script src="js/llm.js?v=20261028a" defer></script>
+<script src="js/ai.js?v=20261028b" defer></script>
+<script src="js/app.js?v=20261028b" defer></script>
 </body>
 </html>

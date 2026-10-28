@@ -115,9 +115,14 @@
       if (this._probe[src]) return this._probe[src];
       const p = new Promise((resolve, reject) => {
         const a = new Audio();
-        a.preload = 'metadata';
+        a.preload = 'auto';
         a.src = src;
-        const timer = setTimeout(() => reject(new Error('timeout')), 2500);
+        // 超时放宽到 8s，避免慢网络下误判缺失而回退语音合成
+        const timer = setTimeout(() => resolve(src), 8000);
+        a.onloadedmetadata = () => {
+          clearTimeout(timer);
+          resolve(src);
+        };
         a.oncanplay = () => {
           clearTimeout(timer);
           resolve(src);

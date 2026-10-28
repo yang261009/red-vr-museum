@@ -10,7 +10,7 @@
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: #101216; font-family: var(--font); color: var(--ink); }
-body { user-select: none; }
+body { user-select: none; touch-action: none; -webkit-tap-highlight-color: transparent; }
 #stage { position: fixed; inset: 0; }
 canvas { display: block; }
 .hidden { display: none !important; }
@@ -141,7 +141,7 @@ canvas { display: block; }
 .overall-result { margin-top: 12px; }
 
 /* ---------- 摇杆 & 提示 ---------- */
-#joy { position: absolute; left: 24px; bottom: 24px; }
+#joy { position: absolute; left: 24px; bottom: 24px; touch-action: none; z-index: 15; }
 .joy-base {
   width: 116px; height: 116px; border-radius: 50%; background: rgba(255,255,255,0.1);
   border: 2px solid rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center;
@@ -151,6 +151,31 @@ canvas { display: block; }
   position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
   font-size: 12px; color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.3);
   padding: 6px 14px; border-radius: 14px; white-space: nowrap;
+}
+
+/* ---------- 横屏提示遮罩 ---------- */
+#rotateTip {
+  position: fixed; inset: 0; z-index: 100; background: rgba(8,9,12,0.94);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+  color: #fff; text-align: center;
+}
+#rotateTip .rt-phone {
+  width: 64px; height: 104px; border: 3px solid #fff; border-radius: 12px; position: relative;
+  animation: rt-rotate 1.6s ease-in-out infinite;
+}
+#rotateTip .rt-phone::after {
+  content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 28px; height: 8px; background: #fff; border-radius: 4px;
+}
+@keyframes rt-rotate {
+  0%, 20% { transform: rotate(0deg); }
+  55%, 100% { transform: rotate(90deg); }
+}
+#rotateTip p { font-size: 20px; font-weight: 600; margin: 0; }
+#rotateTip em { font-size: 13px; color: rgba(255,255,255,0.55); font-style: normal; }
+/* 仅在竖屏小屏（手机）显示横屏提示 */
+@media (orientation: landscape) {
+  #rotateTip { display: none !important; }
 }
 
 /* ---------- 详情面板 ---------- */
@@ -411,4 +436,18 @@ canvas { display: block; }
   #splash h1 { font-size: 32px; }
   .dt-head { flex-wrap: wrap; }
   .dt-narrate { margin-left: 0; width: 100%; }
+}
+
+/* ---------- 手机横屏操控适配 ---------- */
+@media (max-width: 860px) and (orientation: landscape) {
+  /* 摇杆贴左下，尺寸适中，不挡右侧视野区 */
+  #joy { left: 16px; bottom: 16px; }
+  .joy-base { width: 96px; height: 96px; }
+  .joy-knob { width: 44px; height: 44px; }
+  /* 助手面板收起时更紧凑，避免遮住右侧视野滑动区 */
+  #assistant { width: min(360px, 46vw); bottom: 12px; left: 12px; }
+  #minimapBox { bottom: 12px; }
+  /* 顶部栏更矮 */
+  #topbar { padding: 5px 8px; }
+  .brand-txt span { display: none; }
 }

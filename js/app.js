@@ -190,6 +190,8 @@
     if (id !== 'lobby' && window.Museum && Museum.captureFrame) Museum.captureFrame(id);
     const zone = data.zones.find((z) => z.id === id);
     $('#whereTxt').textContent = zone ? `${zone.name} · ${zone.place}` : '序厅';
+    // 进馆即预加载该展厅配音，用户点“讲解”时几乎秒播（避免慢网络下回退语音合成）
+    if (zone && zone.audio && AI.tryAudio) AI.tryAudio(zone.audio).catch(() => {});
     if (openDetail && zone) setTimeout(() => openDetailPanel(id), instant ? 100 : 1450);
   }
 
@@ -1054,6 +1056,20 @@
       $('#joy').classList.remove('hidden');
       $('#hint').textContent = '摇杆移动 · 滑动屏幕转视角 · 点击展板查看内容';
     }
+
+    // 手机竖屏时显示横屏提示遮罩（仅触屏小屏设备）
+    function updateRotateTip() {
+      const tip = $('#rotateTip');
+      if (!tip) return;
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isSmall = window.innerWidth <= 860;
+      const isPortrait = window.innerHeight > window.innerWidth;
+      if (isTouch && isSmall && isPortrait) tip.classList.remove('hidden');
+      else tip.classList.add('hidden');
+    }
+    updateRotateTip();
+    window.addEventListener('resize', updateRotateTip);
+    window.addEventListener('orientationchange', updateRotateTip);
 
     window.addEventListener('resize', onResize);
   }
